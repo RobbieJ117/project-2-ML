@@ -15,7 +15,7 @@ def rosenbrock(dimension, vector):
     return vector
 
 '''
-Main body of the code... it can be wrapped in a def to add several iterations
+If executed via command line takes arguments as list of floating point numbers and outputs list plus rosenbrock evaluation
 
 '''
 if __name__ == "__main__":
