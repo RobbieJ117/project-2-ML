@@ -9,7 +9,7 @@ import numpy as np
 
 # figure out how to add parameters for input layer size, output layer size, and hidden layer size
 class MLBP(object):
-    def __init__(self, inputNodes, outputNodes, hiddenNodes, hiddenDepth, learningRate, momentum=False):
+    def __init__(self, inputNodes, outputNodes, hiddenNodes, hiddenDepth, learningRate, momentum=0):
         self.inputLayerNodes = inputNodes                     
         self.outputLayerNodes = outputNodes          
         self.hiddenLayerNodes = hiddenNodes
@@ -23,14 +23,15 @@ class MLBP(object):
         # otherwise W1 is input nodes x hidden nodes in dimension
         else:                                                                      
             self.W1 = np.random.randn(self.inputLayerNodes, self.hiddenLayerNodes)
-        # create empty list to hold all the matrices
+
+        # create empty list to hold all the weight matrices
         # the first matrix dimension is conditional on number of hidden layers above
-        matrixList = [self.W1]
+        self.weightMatrixList = [self.W1]
         # add hidden layers of hiddenNode x hiddenNode dimensions for each hidden layer greater than 1
         for i in range(self.hiddenLayerNumber):
-            matrixList.append(np.random.randn(self.hiddenLayerNodes, self.hiddenLayerNodes))
+            self.weightMatrixList.append(np.random.randn(self.hiddenLayerNodes, self.hiddenLayerNodes))
         # set dimensions for the output weight matrix with number of output nodes in mind
-        matrixList.append(np.random.rand(self.hiddenLayerNodes, self.outputLayerNodes))
+        self.weightMatrixList.append(np.random.rand(self.hiddenLayerNodes, self.outputLayerNodes))
 
     '''
     
