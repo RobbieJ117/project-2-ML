@@ -1,5 +1,5 @@
 import sys
-import csv
+import decimal
 import numpy as np
 
 
@@ -16,43 +16,65 @@ def rosenbrock(vector):
     return vector
 
 '''
-evalutes the rosenbrock function and prints to a csv file
-Note from Robbie: I got it to write to a csv file which took some time to understand, and I implemented
-the loops. I am not 100% sure on some of the values to enter into the rosenbrock function.
+The following produces 5 seperate data files for dimensions of n = {2, 3, 4, 5, 6} as comma seperated .txt files
+
 '''
+data_2d = open("data_2d.txt", 'w')
+# data for 2
+for x_1 in range(-102, 103):
+    for x_2 in range(-102, 103):
+        rS = rosenbrock([x_1/34, x_2/34])
+        line = "%.2f,%.2f,%.2f\n" % (rS[0], rS[1], rS[2])
+        line.strip()
+        data_2d.write(line)
+data_2d.close()
 
+data_3d = open("data_3d.txt", 'w')
+for x_1 in range(-30, 31):
+    for x_2 in range(-30, 31):
+        for x_3 in range(-30, 31):
+            rS = rosenbrock([x_1/10, x_2/10, x_3/10])
+            data_3d.write("%.2f,%.2f,%.2f,%.2f\n" % (rS[0], rS[1], rS[2], rS[3]))
+data_3d.close()
 
-# data for 5
-data_2d = []
-with open("data_5d.csv", 'wb') as csvfile:
-    writer = csv.writer(csvfile, delimiter=' ',
-                        quotechar='|', quoting=csv.QUOTE_MINIMAL)
-    for x_1 in range(-3, 3):
-        for x_2 in range(-3, 3):
-            rosenbrockSum = rosenbrock([x_1, x_2])
-            data_2d.append([x_1, x_2, rosenbrockSum])
-            writer.writerow(data_2d)
+data_4d = open("data_4d.txt", 'w')
+for x_1 in range(-16, 17):
+    for x_2 in range(-16, 17):
+        for x_3 in range(-16, 17):
+            for x_4 in range(-16, 17):
+                rS = rosenbrock([x_1/4, x_2/4, x_3/4, x_4/4])
+                data_4d.write("%.2f,%.2f,%.2f,%.2f,%.2f\n" % (rS[0], rS[1], rS[2], rS[3], rS[4]))
+data_4d.close()
 
+data_5d = open("data_5d.txt", 'w')
+for x_1 in range(-9, 10):
+    for x_2 in range(-9, 10):
+        for x_3 in range(-9, 10):
+            for x_4 in range(-9, 10):
+                for x_5 in range(-9, 10):
+                    rS = rosenbrock([x_1/3, x_2/3, x_3/3, x_4/3, x_5/3])
+                    data_5d.write("%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n" % (rS[0], rS[1], rS[2], rS[3], rS[4], rS[5]))   
+data_5d.close()
+
+data_6d = open("data_6d.txt", 'w')
 # data for 6
-data_6d = []
-with open("data_6d.csv", 'wb') as csvfile:
-    writer = csv.writer(csvfile, delimiter=' ',
-                        quotechar='|', quoting=csv.QUOTE_MINIMAL)
-    for x_1 in range(-3, 3):
-        for x_2 in range(-3, 3):
-            for x_3 in range(-3, 3):
-                for x_4 in range(-3, 3):
-                    for x_5 in range(-3, 3):
-                        for x_6 in range(-3, 3):
-                            rosenbrockSum = rosenbrock([x_1, x_2, x_3, x_4, x_5, x_6])
-                            writer.writerow([x_1, x_2, x_3, x_4, x_5, x_6, rosenbrockSum])
-
+for x_1 in range(-6, 7):
+    for x_2 in range(-6, 7):
+        for x_3 in range(-6, 7):
+            for x_4 in range(-6, 7):
+                for x_5 in range(-6, 7):
+                    for x_6 in range(-6, 7):
+                        rS = rosenbrock([x_1/2, x_2/2, x_3/2, x_4/2, x_5/2, x_6/2])
+                        data_6d.write("%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n" % (rS[0], rS[1], rS[2], rS[3], rS[4], rS[5], rS[6]))  
+data_6d.close()
 
 
 '''
 If executed via command line takes arguments as list of floating point numbers and outputs list plus rosenbrock evaluation
 
 '''
+
+
 
 '''
 
