@@ -6,12 +6,12 @@ import numpy as np
 '''
 Rosenbrock takes an integer dimensionality and a list of floating point numbers as arguments.
 It returns the original vector, with the summation appended as the last element.
-
 '''
+
 def rosenbrock(dimension, vector):
     sum = 0
-    for i in range(0, dimension - 1):
-        sum += pow((1 - vector[i]), 2) + (100 * pow((vector[i+1] - pow(vector[i], 2)), 2))
+    for i in range(0, dimension - 2):
+        sum += ((((vector[i]*vector[i])-vector[i+1])**2)+(vector[i]-1)**2)
     vector.append(sum)
     return vector
 
@@ -20,16 +20,34 @@ evalutes the rosenbrock function and prints to a csv file
 Note from Robbie: I got it to write to a csv file which took some time to understand, and I implemented
 the loops. I am not 100% sure on some of the values to enter into the rosenbrock function.
 '''
-writer = csv.writer(open("dataGenerated.csv", 'w'))
-writer.writerow( ('X2', ' X3', ' X4', ' X5', ' X6', ' SUM') )
+writer_d6 = open("dataGenerated_6D.csv", 'w')
+writer_d5 = open("dataGenerated_5D.csv", 'w')
+writer_d4 = open("dataGenerated_4D.csv", 'w')
+writer_d3 = open("dataGenerated_3D.csv", 'w')
+result3 = np.arr
 for x_1 in range(-3, 3):
     for x_2 in range(-3, 3):
+        result3 = rosenbrock(3, [x_1, x_2])
+        np.savetxt("dataGenerated_3D.csv", result, delimiter=",")
         for x_3 in range(-3, 3):
+            result4 = rosenbrock(4, [x_1, x_2, x_3])
+            np.savetxt("dataGenerated_4D.csv", result, delimiter=",")
             for x_4 in range(-3, 3):
+                result5 = rosenbrock(5, [x_1, x_2, x_3, x_4])
+                np.savetxt("dataGenerated_5D.csv", result, delimiter=",")
                 for x_5 in range(-3, 3):
-                    for x_6 in range(-3, 3):
-                        x_6 = rosenbrock(5, [x_2, x_3, x_4, x_5, x_6])
-                        writer.writerow(x_6)
+                    result6 = rosenbrock(6, [x_1, x_2, x_3, x_4, x_5])
+                    np.savetxt("dataGenerated_6D.csv", result, delimiter=",")
+                    x_5=x_5+0.3
+                x_4 = x_4 + 0.3
+            x_3 = x_3 + 0.3
+        x_2 = x_2 + 0.3
+    x_1 = x_1 + 0.3
+    writer_d6.close()
+    writer_d5.close()
+    writer_d4.close()
+    writer_d3.close()
+
 
 
 '''
