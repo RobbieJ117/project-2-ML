@@ -8,9 +8,9 @@ Rosenbrock takes an integer dimensionality and a list of floating point numbers 
 It returns the original vector, with the summation appended as the last element.
 
 '''
-def rosenbrock(dimension, vector):
+def rosenbrock(vector):
     sum = 0
-    for i in range(0, dimension - 1):
+    for i in range(0, len(vector) - 1):
         sum += pow((1 - vector[i]), 2) + (100 * pow((vector[i+1] - pow(vector[i], 2)), 2))
     vector.append(sum)
     return vector
@@ -20,16 +20,33 @@ evalutes the rosenbrock function and prints to a csv file
 Note from Robbie: I got it to write to a csv file which took some time to understand, and I implemented
 the loops. I am not 100% sure on some of the values to enter into the rosenbrock function.
 '''
-writer = csv.writer(open("dataGenerated.csv", 'w'))
-writer.writerow( ('X2', ' X3', ' X4', ' X5', ' X6', ' SUM') )
-for x_1 in range(-3, 3):
-    for x_2 in range(-3, 3):
-        for x_3 in range(-3, 3):
-            for x_4 in range(-3, 3):
-                for x_5 in range(-3, 3):
-                    for x_6 in range(-3, 3):
-                        x_6 = rosenbrock(5, [x_2, x_3, x_4, x_5, x_6])
-                        writer.writerow(x_6)
+
+
+# data for 5
+data_2d = []
+with open("data_5d.csv", 'wb') as csvfile:
+    writer = csv.writer(csvfile, delimiter=' ',
+                        quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    for x_1 in range(-3, 3):
+        for x_2 in range(-3, 3):
+            rosenbrockSum = rosenbrock([x_1, x_2])
+            data_2d.append([x_1, x_2, rosenbrockSum])
+            writer.writerow(data_2d)
+
+# data for 6
+data_6d = []
+with open("data_6d.csv", 'wb') as csvfile:
+    writer = csv.writer(csvfile, delimiter=' ',
+                        quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    for x_1 in range(-3, 3):
+        for x_2 in range(-3, 3):
+            for x_3 in range(-3, 3):
+                for x_4 in range(-3, 3):
+                    for x_5 in range(-3, 3):
+                        for x_6 in range(-3, 3):
+                            rosenbrockSum = rosenbrock([x_1, x_2, x_3, x_4, x_5, x_6])
+                            writer.writerow([x_1, x_2, x_3, x_4, x_5, x_6, rosenbrockSum])
+
 
 
 '''
