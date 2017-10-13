@@ -24,9 +24,7 @@ data_2d = open("data_2d.txt", 'w')
 for x_1 in range(-102, 103):
     for x_2 in range(-102, 103):
         rS = rosenbrock([x_1/34, x_2/34])
-        line = "%.2f,%.2f,%.2f\n" % (rS[0], rS[1], rS[2])
-        line.strip()
-        data_2d.write(line)
+        data_2d.write("%.2f,%.2f,%.2f\n" % (rS[0], rS[1], rS[2]))
 data_2d.close()
 
 data_3d = open("data_3d.txt", 'w')
