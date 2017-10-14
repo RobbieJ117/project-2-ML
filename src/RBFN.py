@@ -46,13 +46,12 @@ class RBFN(object):
      with dimensions (number of data samples)x(1)
     """
     def train_wgts(self,X,Y):
-
         self.grad_descent(X, Y)
         self.print_results(self.iteration)
         self.iteration+=1
 
     '''
-    Chose to implement gradient descent as an auxilary function called by train_wgts()
+    Chose to implement gradient descent as an auxiliary function called by train_wgts()
     '''
     def grad_descent(self, X, Y):
         for epoch in range(0, self.epochs):
@@ -71,9 +70,22 @@ class RBFN(object):
     X is a numpy matrix of test data points
     dimensions of X are (number input samples)x(number input dimensions)
     """
-    def test(self, X, Y):
+    def test(self, X, Y, iter):
+        i = self.iteration
+        n = X.shape[0]
         G = self.activation_fxn(X)
-        return G
+        rmse = np.sqrt(np.mean((X-Y)**2))#RMSE
+        mae = np.mean(X-Y)#MAE
+        A = np.hstack(X, G) #set of vectors of predicted points
+        B = np.hstack(X, Y) #set of vectors for actual points
+        res = 1 - np.dot(A / np.linalg.norm(A, axis=1)[..., None], (B / np.linalg.norm(B, axis=1)[..., None]).T)# compute cosine distance between vectors
+        cos_dist = res.mean()# mean cosine distance
+        reults_string = "Iteration{}\nRMSE:{}\nMAE:{}\nMean Cosine similarity{}\n\n".format(i, rmse, mae, cos_dist)
+        f = open("results log.txt", "r+")
+        f.write(reults_string)
+        f.close()
+        return results
+
 
     def print_results(self, iter):
         file_name = "training_cycle{}.png".format(iter)
