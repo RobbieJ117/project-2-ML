@@ -31,12 +31,17 @@ class mlbp2(object):
 
     # hypTangentPrime returns the derivative of tanh of input x
     def hypTangentPrime(self, x):
-        # return 1 - np.square((np.tanh(x)))
-        return 4/((np.exp(x)-np.exp(-x))**2)
+        return 1 - np.square((np.tanh(x)))
+        # return 4/((np.exp(x)-np.exp(-x))**2)
 
     # linear activation sums the vector X into a scalar result
     def linearActivation(self, X):
-        return np.sum(X)
+        return X
+
+    def linearActivationPrime(self, X):
+        matrix = np.ones_like(X)
+        return matrix
+
 
     '''
     Network Traversal Defs
@@ -44,8 +49,20 @@ class mlbp2(object):
     '''
     # def forwardPass "feeds" the input matrix X through the network
     def forwardPass(self, activation):
-        for bias, weight in zip(self.biases, self.weights):
+        # grab the last bias weight pair before ziping list together for iteration
+        lBias = self.biases[-1]
+        lWeight = self.weights[-1]
+        
+        # prepare all tanh/sigmoid weights in temp fields by removing the last item in each
+        tBiases = self.biases[:len(self.biases) - 1]
+        tWeights = self.weights[:len(self.weights) - 1]
+
+        # zip together temp bias/weight pairs for the sigmoid function and iterate
+        for bias, weight in zip(tBiases, tWeights):
             activation = self.hypTangent(np.dot(weight, activation) + bias)
+
+        # compute the final pass with the linear activation function
+        activation = self.linearActivation(np.dot(lWeight, activation) + lBias)
         return activation
 
     def backpropagate(self, x, y):
@@ -57,21 +74,37 @@ class mlbp2(object):
         # init activation list for backprop setup
         activation = x
         activationList = [x]
+
+        # grab the last bias weight pair before ziping list together for iteration
+        lBias = self.biases[-1]
+        lWeight = self.weights[-1]
+        
+        # prepare all tanh/sigmoid weights in temp fields by removing the last item in each
+        tBiases = self.biases[:len(self.biases) - 1]
+        tWeights = self.weights[:len(self.weights) - 1]
+
         # stores the intermediate evaluation of the weights times previous layer activation,
         # prior to the activation step
         zList = []
-        for b, w in zip(self.biases, self.weights):
+        for b, w in zip(tBiases, tWeights):
             z = np.dot(w, activation) + b
             zList.append(z)
             activation = self.hypTangent(z)
             activationList.append(activation)
         
+        # compute the final pass with the linear activation function
+        z = np.dot(lWeight, activation) + lBias
+        zList.append(z)
+        activation = self.linearActivation(z)
+        print(activation)
+        activationList.append(activation)
+
         # backprop starts
         # traversing previous activation and intermediate lists in negative index as in the book
         # a key difference here is the derivative of the linear function, which is just zList[-1],
         # rather than the hypTanPrime(zList[-1]), as we're doing function approximation instead of
         # classification
-        delta = self.costPrime(activationList[-1], y) * zList[-1]
+        delta = self.costPrime(activationList[-1], y) * self.linearActivationPrime(zList[-1])
         dwrt_bias[-1] = delta
         dwrt_weight[-1] = np.dot(delta, activationList[-2].T)
 
@@ -108,8 +141,7 @@ class mlbp2(object):
             for i in range(len(x) - 1):
                 indata[i] = x[i]
             outdata = float(x[len(x) - 1])
-            print(indata)
-            print(outdata)
+            print(indata, outdata)
             delta_dwrt_bias, delta_dwrt_weight = self.backpropagate(indata, outdata)
             dwrt_bias = [db+ddb for db, ddb in zip(dwrt_bias, delta_dwrt_bias)]
             dwrt_weight = [dw+ddw for dw, ddw in zip(dwrt_weight, delta_dwrt_weight)]
