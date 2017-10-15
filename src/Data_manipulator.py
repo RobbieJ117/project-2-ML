@@ -28,7 +28,7 @@ class Data_manipulator:
         f_2 = input_data[start_i:-1, :]
         return f_1, f_2
     
-    #separates the input vectors from the targets
+    #separates the input vectors from their target outputs
     def cleave(self, in_matrix):
         x = in_matrix[:,0:-1]
         y = in_matrix[:,-2:-1]
