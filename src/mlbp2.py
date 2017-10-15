@@ -19,7 +19,7 @@ class mlbp2(object):
         # initialize weight and biase matrices
         self.biases = [np.random.randn(y, 1) for y in layers[1:]]
         self.weights = [np.random.randn(y, x)
-                        for x, y in zip(layers[:1], layers[1:])]
+                        for x, y in zip(layers[:-1], layers[1:])]
 
     '''
     Activation Function Defs
@@ -68,13 +68,16 @@ class mlbp2(object):
         
         # backprop starts
         # traversing previous activation and intermediate lists in negative index as in the book
+        # a key difference here is the derivative of the linear function, which is just zList[-1],
+        # rather than the hypTanPrime(zList[-1]), as we're doing function approximation instead of
+        # classification
         delta = self.costPrime(activationList[-1], y) * zList[-1]
         dwrt_bias[-1] = delta
         dwrt_weight[-1] = np.dot(delta, activationList[-2].T)
 
         # loop for dynamic size, again with a decreasing index to be reverse of add order
         for l in range(2, self.layerNum):
-            z = zList[-l + 1]
+            z = zList[-l]
             htp = self.hypTangentPrime(z)
             delta = np.dot(self.weights[-l+1].T, delta) * htp
             dwrt_bias[-l] = delta
@@ -105,10 +108,13 @@ class mlbp2(object):
             for i in range(len(x) - 1):
                 indata[i] = x[i]
             outdata = float(x[len(x) - 1])
+            print(indata)
+            print(outdata)
             delta_dwrt_bias, delta_dwrt_weight = self.backpropagate(indata, outdata)
             dwrt_bias = [db+ddb for db, ddb in zip(dwrt_bias, delta_dwrt_bias)]
             dwrt_weight = [dw+ddw for dw, ddw in zip(dwrt_weight, delta_dwrt_weight)]
         
+
         # update weight matrices after the batch is complete
         # adjustment amount is normalized by the batch size
         self.weights = [w - (learningRate/len(batch))*dw 
@@ -117,4 +123,17 @@ class mlbp2(object):
                             for b, db in zip(self.biases, dwrt_bias)]
 
 
+    '''
+    Test method to find accuracy
 
+    '''
+
+    def test(self, testData):
+        for x in testData:
+            xval = np.zeros((len(x) - 1, 1))
+            for i in range(len(x) - 1):
+                xval[i] = x[i]
+            yval = float(x[len(x) - 1])
+            # print(xval)
+            # test_results = [(np.argmax(self.forwardPass(xval)), yval)]
+        # return sum(int(x == y) for (x, y) in test_results)
