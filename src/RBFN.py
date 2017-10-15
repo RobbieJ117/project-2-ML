@@ -11,7 +11,7 @@ class RBFN(object):
         self.id = "{}.txt".format(experiment_id)
         self.in_dim = in_dim #in_dim: dimension of the input data
         self.basis_fxns = basis_fxns #basis_fxns: number of hidden radial basis functions
-        self.centers = np.random.uniform(low=-3.0, high=3.0, size=(self.basis_fxns, self.in_dim-1))
+        self.centers = np.random.uniform(low=-3.0, high=3.0, size=(self.basis_fxns, self.in_dim))
         self.weights = np.random.uniform(low=-.1, high=.1, size=(basis_fxns, 1)) # initially random
         self.epochs = 100
         self.ada = .05
