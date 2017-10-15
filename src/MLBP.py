@@ -130,7 +130,8 @@ class Mlbp(object):
         
         for i in range(0, len(derivativeList)):
             derivativeList[i] = np.multiply(derivativeList[i], self.learningRate)
-            self.weightMatrixList[i] = np.subtract(self.weightMatrixList[i], derivativeList[i])
+            self.weightMatrixList[i] = np.subtract(derivativeList[i], self.weightMatrixList[i])
+                
             # print(np.multiply(derivativeList[i], self.learningRate)
             # print(np.add(derivativeList[i], self.weightMatrixList[i]))
     
@@ -141,7 +142,7 @@ class Mlbp(object):
     def train(self, X, y):
         timeStep = 0
         
-        for i in range(1000000):
+        for i in range(10):
             # call gradient descent
             self.gradientDescentUpdate(X, y)
             # add error and timestep to dictionary

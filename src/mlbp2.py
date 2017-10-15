@@ -68,13 +68,13 @@ class mlbp2(object):
         
         # backprop starts
         # traversing previous activation and intermediate lists in negative index as in the book
-        delta = self.costPrime(activationList[-1], y) * self.hypTangentPrime(zList[-1])
+        delta = self.costPrime(activationList[-1], y) * zList[-1]
         dwrt_bias[-1] = delta
         dwrt_weight[-1] = np.dot(delta, activationList[-2].T)
 
         # loop for dynamic size, again with a decreasing index to be reverse of add order
         for l in range(2, self.layerNum):
-            z = zList[-l]
+            z = zList[-l + 1]
             htp = self.hypTangentPrime(z)
             delta = np.dot(self.weights[-l+1].T, delta) * htp
             dwrt_bias[-l] = delta
@@ -99,8 +99,13 @@ class mlbp2(object):
         dwrt_bias = [np.zeros(b.shape) for b in self.biases]
         dwrt_weight = [np.zeros(w.shape) for w in self.biases]
 
-        for x, y in batch:
-            delta_dwrt_bias, delta_dwrt_weight = self.backpropagate(x, y)
+        for x in batch:
+            size = int(len(x) - 1)
+            indata = np.zeros((size, 1))
+            for i in range(len(x) - 1):
+                indata[i] = x[i]
+            outdata = float(x[len(x) - 1])
+            delta_dwrt_bias, delta_dwrt_weight = self.backpropagate(indata, outdata)
             dwrt_bias = [db+ddb for db, ddb in zip(dwrt_bias, delta_dwrt_bias)]
             dwrt_weight = [dw+ddw for dw, ddw in zip(dwrt_weight, delta_dwrt_weight)]
         
