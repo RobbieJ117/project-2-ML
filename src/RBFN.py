@@ -2,18 +2,20 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import os.path
 
 class RBFN(object):
 
 
-    def __init__(self, in_dim, basis_fxns, sigma = 1.0):
+    def __init__(self, experiment_id, in_dim, basis_fxns):
+        self.id = "{}.txt".format(experiment_id)
         self.in_dim = in_dim #in_dim: dimension of the input data
         self.basis_fxns = basis_fxns #basis_fxns: number of hidden radial basis functions
-        self.sigma = sigma #Sigma is the spread of the basis function
         self.centers = np.random.uniform(low=-3.0, high=3.0, size=(self.basis_fxns, self.in_dim-1))
         self.weights = np.random.uniform(low=-.1, high=.1, size=(basis_fxns, 1)) # initially random
         self.epochs = 100
         self.ada = .05
+        self.sigma = 1 #Sigma is the spread of the basis function
         self.lossHistory = []
         self.iteration=1
 
@@ -70,25 +72,29 @@ class RBFN(object):
     X is a numpy matrix of test data points
     dimensions of X are (number input samples)x(number input dimensions)
     """
-    def test(self, X, Y, iter):
+    def test(self, X, Y):
         i = self.iteration
         n = X.shape[0]
-        G = self.activation_fxn(X)
-        rmse = np.sqrt(np.mean((X-Y)**2))#RMSE
+        G = self.feed_forward(X)
+        rmse = np.sqrt(np.mean((X-Y))**2)#RMSE
         mae = np.mean(X-Y)#MAE
-        A = np.hstack(X, G) #set of vectors of predicted points
-        B = np.hstack(X, Y) #set of vectors for actual points
+        A = np.hstack((X,G)) #set of vectors of predicted points
+        B = np.hstack((X, Y)) #set of vectors for actual points
         res = 1 - np.dot(A / np.linalg.norm(A, axis=1)[..., None], (B / np.linalg.norm(B, axis=1)[..., None]).T)# compute cosine distance between vectors
         cos_dist = res.mean()# mean cosine distance
-        reults_string = "Iteration{}\nRMSE:{}\nMAE:{}\nMean Cosine similarity{}\n\n".format(i, rmse, mae, cos_dist)
-        f = open("results log.txt", "r+")
+        reults_string = "\nIteration{}\n\nRMSE:{}\nMAE:{}\nMean Cosine similarity{}\n\n".format(i, rmse, mae, cos_dist)
+        if not os.path.isfile(self.id):
+            f = open(self.id, "w")
+            header = "{}:\nAda:{}\nBasis functions:{}\nSigma:{}\n".format(self.ada, self.basis_fxns, self.sigma)
+            f.write(header)
+        else:
+            f = open(self.id, "r+")
         f.write(reults_string)
         f.close()
-        return results
 
 
     def print_results(self, iter):
-        file_name = "training_cycle{}.png".format(iter)
+        file_name = "{}_training_cycle{}.png".format(self.id, iter)
         fig = plt.figure()
         plt.plot(np.arange(0, self.epochs), self.lossHistory)
         fig.suptitle("Training Loss")
