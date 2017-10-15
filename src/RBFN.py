@@ -59,8 +59,6 @@ class RBFN(object):
         for epoch in range(0, self.epochs):
             predicted = self.feed_forward(X)
             loss = 0.5*np.sum(np.square(predicted-Y))#calculate loss
-            if (loss/(X.shape[0])) < 0.05: #If the average loss is smaller than .1 per input, break early
-                return
             # divide by number of inputs to scale the gradients
             gradient = X.T.dot(loss) / X.shape[0]
             self.weights += (self.ada*gradient)#update the weights
