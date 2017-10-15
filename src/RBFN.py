@@ -35,8 +35,8 @@ class RBFN(object):
                 # The below calls the self._kernel_function, which applies the basis function
                 # to each data point
                 G[data_point_arg, center_arg] = np.exp((-np.linalg.norm(self.centers[center_arg]-X[data_point_arg])**2)/(2*(self.sigma**2)))
-                results = G.dot(self.weights)
-                # return a matrix with dimensions: (num_basis_fxns)x(1)
+        results = G.dot(self.weights)
+        # return a matrix with dimensions: (num_basis_fxns)x(1)
         return results #This matrix represents the outputs for each input to the network
 
 
@@ -58,7 +58,7 @@ class RBFN(object):
     def grad_descent(self, X, Y):
         for epoch in range(0, self.epochs):
             predicted = self.feed_forward(X)
-            loss = 0.5*np.sum((predicted-Y)**2)#calculate loss
+            loss = 0.5*np.sum(np.square(predicted-Y))#calculate loss
             if (loss/(X.shape[0])) < 0.05: #If the average loss is smaller than .1 per input, break early
                 return
             # divide by number of inputs to scale the gradients
@@ -85,7 +85,7 @@ class RBFN(object):
         reults_string = "\nIteration{}\n\nRMSE:{}\nMAE:{}\nMean Cosine similarity{}\n\n".format(i, rmse, mae, cos_dist)
         if not os.path.isfile(self.id):
             f = open(self.id, "w")
-            header = "{}:\nAda:{}\nBasis functions:{}\nSigma:{}\n".format(self.ada, self.basis_fxns, self.sigma)
+            header = "{}:\nAda:{}\nBasis functions:{}\nSigma:{}\n".format(self.id, self.ada, self.basis_fxns, self.sigma)
             f.write(header)
         else:
             f = open(self.id, "r+")
