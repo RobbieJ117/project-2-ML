@@ -31,7 +31,7 @@ class Data_manipulator:
     #separates the input vectors from their target outputs
     def cleave(self, in_matrix):
         x = in_matrix[:,0:-1]
-        y = in_matrix[:,-2:-1]
+        y = in_matrix[:,-1:]
         return x, y
     
     #recombines previously sampled data into new samples
