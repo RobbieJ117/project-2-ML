@@ -7,6 +7,7 @@ mlbp2.py is a Multi-layered Feed-forward Neural Network designed to approximate 
 '''
 
 # import packages
+import random
 import numpy as np
 
 # class init
@@ -34,13 +35,18 @@ class mlbp2(object):
         return 1 - np.square((np.tanh(x)))
         # return 4/((np.exp(x)-np.exp(-x))**2)
 
-    # linear activation sums the vector X into a scalar result
+    # linear activation is just the pre-activation matrix
     def linearActivation(self, X):
         return X
-
+    
+    # derivative of the pre-activation matrix is an equally dimensioned matrix of ones
     def linearActivationPrime(self, X):
         matrix = np.ones_like(X)
         return matrix
+
+    # derivative of the cost function for the nth step
+    def costPrime(self, outputActivations, y):
+        return(outputActivations-y)
 
 
     '''
@@ -96,14 +102,12 @@ class mlbp2(object):
         z = np.dot(lWeight, activation) + lBias
         zList.append(z)
         activation = self.linearActivation(z)
-        print(activation)
         activationList.append(activation)
 
         # backprop starts
         # traversing previous activation and intermediate lists in negative index as in the book
-        # a key difference here is the derivative of the linear function, which is just zList[-1],
-        # rather than the hypTanPrime(zList[-1]), as we're doing function approximation instead of
-        # classification
+        # a key difference here is the derivative of the linear function, as we're doing function 
+        # approximation instead of classification
         delta = self.costPrime(activationList[-1], y) * self.linearActivationPrime(zList[-1])
         dwrt_bias[-1] = delta
         dwrt_weight[-1] = np.dot(delta, activationList[-2].T)
@@ -120,18 +124,29 @@ class mlbp2(object):
         return(dwrt_bias, dwrt_weight)
 
     '''
-    Cost Function Derivative
-
-    '''
-    def costPrime(self, outputActivations, y):
-        return(outputActivations-y)
-
-    '''
     Finally, train the network using mini-batch training.
     Parameters are the batch and a learning rate (batch, learningRate), respectively.
 
     '''
-    def train(self, batch, learningRate):
+
+    def stochGradientDescent(self, trainingData, epochs, batchSize, learningRate, testData=None):
+        n = len(trainingData)
+        for j in range(epochs):
+            random.shuffle(trainingData)
+            batches = [
+                trainingData[k:k+batchSize]
+                for k in range(0, n, batchSize)
+            ]
+            for batch in batches:
+                self.updateBatch(batch, learningRate)
+            if testData is not None:
+                nTest = len(testData)
+                print ("Epoch {}: {}".format(
+                    j, self.test(testData)))
+            else:
+                print("Epoch {} complete".format(j))    
+
+    def updateBatch(self, batch, learningRate):
         dwrt_bias = [np.zeros(b.shape) for b in self.biases]
         dwrt_weight = [np.zeros(w.shape) for w in self.biases]
 
@@ -141,7 +156,6 @@ class mlbp2(object):
             for i in range(len(x) - 1):
                 indata[i] = x[i]
             outdata = float(x[len(x) - 1])
-            print(indata, outdata)
             delta_dwrt_bias, delta_dwrt_weight = self.backpropagate(indata, outdata)
             dwrt_bias = [db+ddb for db, ddb in zip(dwrt_bias, delta_dwrt_bias)]
             dwrt_weight = [dw+ddw for dw, ddw in zip(dwrt_weight, delta_dwrt_weight)]
@@ -161,11 +175,12 @@ class mlbp2(object):
     '''
 
     def test(self, testData):
+        test_results = 0
         for x in testData:
             xval = np.zeros((len(x) - 1, 1))
             for i in range(len(x) - 1):
                 xval[i] = x[i]
             yval = float(x[len(x) - 1])
             # print(xval)
-            # test_results = [(np.argmax(self.forwardPass(xval)), yval)]
-        # return sum(int(x == y) for (x, y) in test_results)
+            test_results = test_results + ((self.forwardPass(xval) - yval)**2)
+        return test_results/len(testData)
