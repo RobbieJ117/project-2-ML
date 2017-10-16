@@ -1,22 +1,23 @@
 import numpy as np
 import mlbp2
+from sklearn.preprocessing import normalize
 
-nn = mlbp2.mlbp2([6, 1000, 25, 1])
+nn = mlbp2.mlbp2([2, 50, 50, 1])
 
-dataMatrix = np.loadtxt("data_6d.txt", delimiter=",")
+
+dataMatrix = np.loadtxt("data_2d.txt", delimiter=",")
+dataMatrixNorm = dataMatrix
 # print(x[1:2])
-inputList = []
-checkList = []
-for x in dataMatrix:
-    size = int(len(x) - 1)
-    indata = np.zeros((size, 1))
-    for i in range(len(x) - 1):
-        indata[i] = x[i]
-    outdata = float(x[len(x) - 1])
-    inputList.append(indata)
-    checkList.append(outdata)
+train = dataMatrixNorm[::2]
+test = dataMatrixNorm[::1]
 
 
-nn.stochGradientDescent(dataMatrix, 20, 10, 0.01, dataMatrix)
+# print(train)
+
+nn.stochGradientDescent(train, 50, 20, 0.01, test)
+# nn.stochGradientDescent(test, 20, 100, 0.1, train)
+
+# print(nn.weights, nn.biases)
+# nn.stochGradientDescent(test, 200, 100, 0.01, train)
 
 
