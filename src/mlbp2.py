@@ -29,11 +29,13 @@ class mlbp2(object):
     # hypTangent returns the hyperbolic tangent of input x
     def hypTangent(self, x):
         return np.tanh(x)
+        # return 1.0 / (1.0 + np.exp(-x))
 
     # hypTangentPrime returns the derivative of tanh of input x
     def hypTangentPrime(self, x):
         return 1 - np.square((np.tanh(x)))
         # return 4/((np.exp(x)-np.exp(-x))**2)
+        # return self.hypTangent(x)*(1-self.hypTangent(x))
 
     # linear activation is just the pre-activation matrix
     def linearActivation(self, X):
@@ -46,7 +48,7 @@ class mlbp2(object):
 
     # derivative of the cost function for the nth step
     def costPrime(self, outputActivations, y):
-        return(outputActivations-y)
+        return(-1)*(y - outputActivations)
 
 
     '''
@@ -54,6 +56,7 @@ class mlbp2(object):
 
     '''
     # def forwardPass "feeds" the input matrix X through the network
+    # especially useful for single pass testing
     def forwardPass(self, activation):
         # grab the last bias weight pair before ziping list together for iteration
         lBias = self.biases[-1]
@@ -71,6 +74,7 @@ class mlbp2(object):
         activation = self.linearActivation(np.dot(lWeight, activation) + lBias)
         return activation
 
+    
     def backpropagate(self, x, y):
         # store partial derivatives with respect to bias and weight terms
         dwrt_bias = [np.zeros(b.shape) for b in self.biases]
@@ -102,6 +106,7 @@ class mlbp2(object):
         z = np.dot(lWeight, activation) + lBias
         zList.append(z)
         activation = self.linearActivation(z)
+        # print(activation)
         activationList.append(activation)
 
         # backprop starts
@@ -148,7 +153,7 @@ class mlbp2(object):
 
     def updateBatch(self, batch, learningRate):
         dwrt_bias = [np.zeros(b.shape) for b in self.biases]
-        dwrt_weight = [np.zeros(w.shape) for w in self.biases]
+        dwrt_weight = [np.zeros(w.shape) for w in self.weights]
 
         for x in batch:
             size = int(len(x) - 1)
@@ -163,9 +168,9 @@ class mlbp2(object):
 
         # update weight matrices after the batch is complete
         # adjustment amount is normalized by the batch size
-        self.weights = [w - (learningRate/len(batch))*dw 
+        self.weights = [w - ((learningRate/len(batch))*dw) 
                             for w, dw in zip(self.weights, dwrt_weight)]
-        self.biases = [b - (learningRate/len(batch))*db
+        self.biases = [b - ((learningRate/len(batch))*db)
                             for b, db in zip(self.biases, dwrt_bias)]
 
 
@@ -175,12 +180,16 @@ class mlbp2(object):
     '''
 
     def test(self, testData):
-        test_results = 0
+        test_results = -1
+        yValList = 0
         for x in testData:
             xval = np.zeros((len(x) - 1, 1))
             for i in range(len(x) - 1):
                 xval[i] = x[i]
             yval = float(x[len(x) - 1])
             # print(xval)
+            # print(self.forwardPass(xval))
             test_results = test_results + ((self.forwardPass(xval) - yval)**2)
+            yValList = yValList +  yval
+        print(yValList/len(testData))
         return test_results/len(testData)
