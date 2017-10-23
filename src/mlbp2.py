@@ -10,17 +10,27 @@ mlbp2.py is a Multi-layered Feed-forward Neural Network designed to approximate 
 import random
 import numpy as np
 
+import matplotlib.pyplot as plt
+import os.path
+
 # class init
 class mlbp2(object):
-    def __init__(self, layers):
+    def __init__(self, layers, id):
         # derive the number of layers from the length of the input parameter sizes
         self.layerNum = len(layers)
         self.layerSizes = layers
+        self.id = id
+        self.lossHistory = []
+        self.epochs = 100
 
         # initialize weight and biase matrices
-        self.biases = [np.random.randn(y, 1) for y in layers[1:]]
-        self.weights = [np.random.randn(y, x)
+        self.biases = [np.square(2/layers[0]) * np.random.randn(y, 1) for y in layers[1:]]
+        
+        self.weights = [np.square(2/layers[0]) * np.random.randn(y, x)
                         for x, y in zip(layers[:-1], layers[1:])]
+        
+        print(self.weights)
+        print(self.biases)
 
     '''
     Activation Function Defs
@@ -29,13 +39,12 @@ class mlbp2(object):
     # hypTangent returns the hyperbolic tangent of input x
     def hypTangent(self, x):
         return np.tanh(x)
-        # return 1.0 / (1.0 + np.exp(-x))
 
     # hypTangentPrime returns the derivative of tanh of input x
     def hypTangentPrime(self, x):
-        return 1 - np.square((np.tanh(x)))
-        # return 4/((np.exp(x)-np.exp(-x))**2)
-        # return self.hypTangent(x)*(1-self.hypTangent(x))
+        htp = 1 - np.square((np.tanh(x)))
+        # print(htp)
+        return htp
 
     # linear activation is just the pre-activation matrix
     def linearActivation(self, X):
@@ -46,9 +55,11 @@ class mlbp2(object):
         matrix = np.ones_like(X)
         return matrix
 
+    
+
     # derivative of the cost function for the nth step
     def costPrime(self, outputActivations, y):
-        return(-1)*(y - outputActivations)
+        return  -1*(y - outputActivations)
 
 
     '''
@@ -63,8 +74,8 @@ class mlbp2(object):
         lWeight = self.weights[-1]
         
         # prepare all tanh/sigmoid weights in temp fields by removing the last item in each
-        tBiases = self.biases[:len(self.biases) - 1]
-        tWeights = self.weights[:len(self.weights) - 1]
+        tBiases = self.biases[:-1]
+        tWeights = self.weights[:-1]
 
         # zip together temp bias/weight pairs for the sigmoid function and iterate
         for bias, weight in zip(tBiases, tWeights):
@@ -84,36 +95,42 @@ class mlbp2(object):
         # init activation list for backprop setup
         activation = x
         activationList = [x]
+        # print('--------------------')
+        # print('input: {}'.format(activation))
+        # print('expected output: {}'.format(y))
+        # print('calculated output: {}'.format(self.forwardPass(activation)))
+        # print('error: {}'.format(y - self.forwardPass(activation)))
+        # print()
 
         # grab the last bias weight pair before ziping list together for iteration
         lBias = self.biases[-1]
         lWeight = self.weights[-1]
         
         # prepare all tanh/sigmoid weights in temp fields by removing the last item in each
-        tBiases = self.biases[:len(self.biases) - 1]
-        tWeights = self.weights[:len(self.weights) - 1]
+        tBiases = self.biases[:-1]
+        tWeights = self.weights[:-1]
 
         # stores the intermediate evaluation of the weights times previous layer activation,
         # prior to the activation step
         zList = []
-        for b, w in zip(tBiases, tWeights):
-            z = np.dot(w, activation) + b
+        for bias, weight in zip(tBiases, tWeights):
+            z = np.dot(weight, activation) + bias
             zList.append(z)
             activation = self.hypTangent(z)
+            # print(activation)
             activationList.append(activation)
         
         # compute the final pass with the linear activation function
         z = np.dot(lWeight, activation) + lBias
         zList.append(z)
         activation = self.linearActivation(z)
-        # print(activation)
         activationList.append(activation)
 
         # backprop starts
         # traversing previous activation and intermediate lists in negative index as in the book
         # a key difference here is the derivative of the linear function, as we're doing function 
         # approximation instead of classification
-        delta = self.costPrime(activationList[-1], y) * self.linearActivationPrime(zList[-1])
+        delta = self.costPrime(activationList[-1], y)
         dwrt_bias[-1] = delta
         dwrt_weight[-1] = np.dot(delta, activationList[-2].T)
 
@@ -126,7 +143,7 @@ class mlbp2(object):
             dwrt_weight[-l] = np.dot(delta, activationList[-l-1].T)
 
         # return the derivative with respect to bias and weight matrices
-        return(dwrt_bias, dwrt_weight)
+        return dwrt_bias, dwrt_weight
 
     '''
     Finally, train the network using mini-batch training.
@@ -136,6 +153,7 @@ class mlbp2(object):
 
     def stochGradientDescent(self, trainingData, epochs, batchSize, learningRate, testData=None):
         n = len(trainingData)
+        self.epochs = epochs
         for j in range(epochs):
             random.shuffle(trainingData)
             batches = [
@@ -143,29 +161,28 @@ class mlbp2(object):
                 for k in range(0, n, batchSize)
             ]
             for batch in batches:
+                # anneal this.
+                # learningRate = learningRate / (j+1)
                 self.updateBatch(batch, learningRate)
             if testData is not None:
-                nTest = len(testData)
-                print ("Epoch {}: {}".format(
-                    j, self.test(testData)))
+                self.test(testData)
             else:
                 print("Epoch {} complete".format(j))    
+        self.print_results()
 
     def updateBatch(self, batch, learningRate):
         dwrt_bias = [np.zeros(b.shape) for b in self.biases]
         dwrt_weight = [np.zeros(w.shape) for w in self.weights]
 
         for x in batch:
-            size = int(len(x) - 1)
-            indata = np.zeros((size, 1))
+            iVector = np.zeros(((len(x) - 1),1))
             for i in range(len(x) - 1):
-                indata[i] = x[i]
-            outdata = float(x[len(x) - 1])
-            delta_dwrt_bias, delta_dwrt_weight = self.backpropagate(indata, outdata)
+                iVector[i] = x[i]
+            delta_dwrt_bias, delta_dwrt_weight = self.backpropagate(iVector, x[-1])
             dwrt_bias = [db+ddb for db, ddb in zip(dwrt_bias, delta_dwrt_bias)]
             dwrt_weight = [dw+ddw for dw, ddw in zip(dwrt_weight, delta_dwrt_weight)]
         
-
+        # print (delta_dwrt_weight, delta_dwrt_bias)
         # update weight matrices after the batch is complete
         # adjustment amount is normalized by the batch size
         self.weights = [w - ((learningRate/len(batch))*dw) 
@@ -180,7 +197,7 @@ class mlbp2(object):
     '''
 
     def test(self, testData):
-        test_results = -1
+        test_results = 0
         yValList = 0
         for x in testData:
             xval = np.zeros((len(x) - 1, 1))
@@ -189,7 +206,24 @@ class mlbp2(object):
             yval = float(x[len(x) - 1])
             # print(xval)
             # print(self.forwardPass(xval))
-            test_results = test_results + ((self.forwardPass(xval) - yval)**2)
+            test_results = test_results + np.asscalar((self.forwardPass(xval) - yval)**2)
             yValList = yValList +  yval
-        print(yValList/len(testData))
-        return test_results/len(testData)
+        # print(yValList/len(testData))
+        MSE = test_results/(len(testData))
+        self.lossHistory.append(MSE)
+        return MSE
+
+
+
+    def print_results(self):
+        file_name = "{}.png".format(self.id)
+        fig = plt.figure()
+        plt.plot(np.arange(0, len(self.lossHistory)), self.lossHistory)
+        fig.suptitle("Training Loss")
+        plt.xlabel("Epoch #")
+        plt.ylabel("Loss")
+        fig.savefig(file_name)
+        plt.close(fig)
+        self.lossHistory = []
+        print(self.weights)
+        print(self.biases)
